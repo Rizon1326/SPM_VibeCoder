@@ -1,224 +1,151 @@
-# AI Chatbot
+# AI Chatbot — Project Explanation
 
-An AI-powered conversational assistant leveraging the Groq LLM API. Reengineered by Mahir, Rafid & Mehedi.
+An AI-powered conversational assistant with a clean web UI (HTML/CSS/JS) and a Python FastAPI backend calling the Groq LLM API. Reengineered by Mahir, Rafid & Mehedi.
+
+---
+
+## 1) Plain‑English Overview
+- You type a prompt and press Send.
+- The browser sends the whole conversation (messages) to the local Python backend.
+- The backend calls Groq’s model with your conversation and returns the reply.
+- The UI renders the assistant’s response as a chat bubble. You repeat.
+- Light/Dark theme can be toggled anytime.
+
+Key point: your API key lives on the server (.env), not in the browser.
 
 ---
 
-## 1. Non‑Technical Overview (Plain English)
-
-Think of this chatbot like a helpful digital assistant sitting in a chat window:
-- You type a question in the box and press Send.
-- Your message is packaged and sent to a smart brain (Groq's language model) on the internet.
-- That brain reads the whole conversation so far (not just the last message), thinks, and writes a reply.
-- The reply comes back and is shown as a bubble. You ask again, it learns the context and continues smoothly.
-- You can switch between Light and Dark mode with the toggle button – the look changes but the brain is the same.
-
-You do NOT need to understand how AI itself works to use it. You only need an API key (a secret password) that tells the Groq server “allow this user to ask questions.”
-
----
-## 2. High-Level Flow (Conceptual)
-1. User types a message and hits Enter / Send.
-2. Frontend adds your message to a local list called `conversationHistory`.
-3. That list is sent to Groq’s API as `messages`.
-4. Groq returns a response containing the assistant’s reply.
-5. The reply is added back into `conversationHistory` and rendered.
-6. Scroll moves to bottom for continuity.
-7. Repeat.
+## 2) Architecture (What lives where)
+- Frontend (static): `index.html`, `css/style.css`, `js/main.js`
+  - Renders chat UI, manages theme, stores `conversationHistory`, calls backend.
+- Backend (Python): `backend/`
+  - `backend/app.py` — FastAPI app with endpoints `/api/chat`, `/api/health`, `/api/config`
+  - `backend/models.py` — Pydantic models: `Message`, `ChatRequest`, `ChatResponse`
+  - `backend/llm_client.py` — Async httpx client for Groq API
+  - `backend/config.py` — Loads `.env` (GROQ_API_KEY, GROQ_MODEL, GROQ_API_URL)
+- Startup: `start.sh` runs both servers (frontend on 5500, backend on 8000)
+- Dependencies: `requirements.txt`
+- Environment template: `.env.example`
 
 ---
-## 3. Technical Architecture Deep Dive
-### 3.1 Files & Responsibilities
-| File | Role |
-|------|------|
-| `index.html` | Structural skeleton of the chat app and theme toggle button |
-| `css/style.css` | Visual design, themes (light/dark), layout, animations |
-| `config/api.js` | Holds API endpoint, model name, and API key (DO NOT expose publicly) |
-| `js/main.js` | Core logic: theme control, message rendering, API calls, markdown formatting |
 
-### 3.2 Core Data Structure
-`conversationHistory` (Array of objects):
-```js
+## 3) Message Contract (Core data)
+`Message`: `{ role: "system" | "user" | "assistant", content: string }`
+
+Frontend keeps an array `conversationHistory` like:
+```json
 [
-  { role: "system", content: "You are AI..." },
-  { role: "user", content: "Hello" },
-  { role: "assistant", content: "Hi! How can I help?" }
+  { "role": "system", "content": "You are AI..." },
+  { "role": "user", "content": "Hello" },
+  { "role": "assistant", "content": "Hi! How can I help?" }
 ]
 ```
-Each object has:
-- `role`: `system` | `user` | `assistant`
-- `content`: plain text the model sees
-
-The entire array is sent every request so the model keeps context.
-
-### 3.3 Theme Management
-Functions: `initTheme()` + `toggleTheme()`
-- Reads saved value from `localStorage` (`light` or `dark`).
-- Applies it to `<html data-theme="...">` which switches CSS variables.
-- User toggle persists between page reloads.
-
-### 3.4 Sending a Message
-Function: `sendMessage()`
-Steps:
-1. Get current input value.
-2. Ignore if empty.
-3. Render user bubble via `addMessage(text, "user")`.
-4. Push to `conversationHistory`.
-5. Clear input.
-6. Call `callLLM()`.
-
-### 3.5 Calling Groq API
-Function: `callLLM()`
-Workflow:
-1. Disable Send button (prevent double submits).
-2. Show temporary "typing" bubble.
-3. POST to `API_CONFIG.url` with JSON body:
-   - `model`: e.g. `llama-3.1-70b-versatile`
-   - `messages`: entire `conversationHistory` array.
-   - `temperature`, `max_tokens` (tuning generation style).
-4. If HTTP error → show error bubble (`Groq Error 4xx/5xx`).
-5. If success: parse JSON → `data.choices[0].message.content`.
-6. Add assistant message + push to history.
-7. Re-enable Send button.
-
-### 3.6 Rendering Messages
-Function: `addMessage(content, role)`
-- Creates a `<div class="message {role}">`.
-- If role is `typing` adds animated placeholder.
-- Otherwise runs a small markdown formatter (bold, italics, code blocks, lists, headings) using regex replacements.
-- Appends bubble → smooth scroll to bottom.
-
-### 3.7 Markdown Formatting (Simplified)
-Regex transforms examples:
-| Raw | Rendered |
-|-----|----------|
-| `**bold**` | `<strong>bold</strong>` |
-| `*italic*` | `<em>italic</em>` |
-| `` `inline` `` | styled `<code>` block |
-| ``` ```
-```code here``` | full-width monospace block |
-| `- item` | bullet line with accent border |
-| `### Title` | styled heading |
-
-Potential Pitfall: Regex order matters (e.g., bold before italics). For production scale, consider a library like `marked` or `markdown-it` instead of multiple regex chains.
-
-### 3.8 Error Handling
-- Network failure → catch block: shows `Network error: ...`.
-- Invalid config (missing key/model/url) → early throw.
-- API non-200 → extracts raw body text for debugging.
-
-### 3.9 Performance Notes
-- Conversation history grows; for very long chats you might truncate earlier messages.
-- Regex formatting is OK for short messages; heavy content could be optimized.
-- No debounce on sending; user can flood requests if spamming (rate limit risk).
-
-### 3.10 Security Considerations
-- API key currently lives in client-side JS (`config/api.js`): any user could view it in DevTools. For real deployment you MUST proxy through a backend server and keep the key secret.
-- Avoid exposing system prompts with sensitive data.
-
-### 3.11 Accessibility & UX
-- Keyboard: Enter sends, Shift+Enter (future enhancement) could create multiline.
-- Color contrast meets readability standards in both themes.
-- Focus ring on input improves usability.
+Every time you send a message, the full array is POSTed to the backend.
 
 ---
-## 4. Detailed Execution Sequence (Pseudo Flow)
-```text
-User presses Send
-  ↓
-sendMessage()
-  → addMessage(user)
-  → conversationHistory.push(user)
-  → callLLM()
-      ↓ show typing bubble
-      ↓ fetch() POST messages
-      ↓ success? yes → parse JSON
-            → addMessage(assistant)
-            → conversationHistory.push(assistant)
-      ↓ success? no → addMessage(error)
-  → re-enable send button
+
+## 4) Request Flow (End‑to‑end)
+1) User sends text → `sendMessage()` pushes to `conversationHistory` → calls `callLLM()`.
+2) Frontend POSTs to `http://127.0.0.1:8000/api/chat` with `{ messages: [...] }`.
+3) Backend validates, builds Groq payload and calls Groq via httpx.
+4) Backend extracts the assistant content and responds: `{ reply: "...", error: null }`.
+5) Frontend renders the reply, scrolls to bottom, re‑enables Send.
+
+---
+
+## 5) API Endpoints (Backend)
+- GET `/api/health` → `{ status: "ok", model: "...", api_configured: true|false }`
+- GET `/api/config` → safe config (API key masked)
+- POST `/api/chat` → body: `{ messages: Message[] }` → response: `{ reply?: string, error?: string }`
+
+Example curl (chat):
+```bash
+curl -X POST http://127.0.0.1:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "Hello!"}
+    ]
+  }'
 ```
 
 ---
-## 5. How To Extend (Suggestions)
-| Goal | Suggestion |
-|------|------------|
-| Prevent API abuse | Add request queue + disable while pending |
-| Better formatting | Use a markdown library instead of regex |
-| Longer chats | Implement message summarization or trimming |
-| Save sessions | Persist `conversationHistory` to `localStorage` or backend |
-| Multi-model support | Dropdown to choose model before sending |
-| Streaming replies | Use Fetch streaming / Server-Sent Events for token-by-token output |
-| Mobile UX | Auto-expand input to multiple lines; add send-on-swipe |
-| Accessibility | Add ARIA roles to message list & announce typing status |
-| Privacy | Move API call server-side to hide API key |
-| User avatars | Add simple avatar circles for user / AI roles |
+
+## 6) Environment (.env)
+From `.env.example` (edit `.env`):
+```env
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_API_URL=https://api.groq.com/openai/v1/chat/completions
+GROQ_MODEL=llama-3.3-70b-versatile
+HOST=127.0.0.1
+PORT=8000
+```
+Note: the backend has a default, but the `.env` values override it. Keep your API key secret.
 
 ---
-## 6. Common Concepts Explained
-| Concept | Meaning |
-|---------|---------|
-| API Key | Secret credential to call Groq’s servers |
-| Model | Specific AI brain version (e.g., `llama-3.1-70b-versatile`) |
-| Temperature | Controls creativity (lower = focused, higher = imaginative) |
-| Max Tokens | Upper bound for reply length |
-| System Prompt | Initial hidden instruction shaping personality |
-| Role | Who wrote a message (`system`, `user`, `assistant`) |
-| Context | Entire conversation history sent every time |
+
+## 7) How to Run (Local)
+```bash
+pip install -r requirements.txt
+cp .env.example .env    # add your GROQ_API_KEY
+chmod +x start.sh
+./start.sh
+```
+Open frontend: http://127.0.0.1:5500/index.html
+Backend docs: http://127.0.0.1:8000/docs
 
 ---
-## 7. Quick Start If You “Don’t Know Code”
-1. Get API key (follow steps above).
-2. Paste key into `config/api.js` replacing placeholder.
-3. Double-click `start.sh` (or run the bash command) to launch local server.
-4. Open the shown URL → Start typing.
-5. Toggle theme with the sun/moon button if you prefer dark mode.
-6. If it stops working → open DevTools Console (Ctrl+Shift+I) and read the error bubble.
+
+## 8) Frontend Details
+- `initTheme()` / `toggleTheme()` controls the theme (persisted in localStorage).
+- `addMessage()` renders bubbles with simple markdown (bold, italic, code, lists, headers).
+- `callLLM()` now calls the Python backend (no more client‑side API key).
+- Console helpers: `ChatDebug.health()`, `ChatDebug.config()`, `ChatDebug.memory()`, `ChatDebug.clear()`.
 
 ---
-## 8. Safety Checklist Before Sharing
-- [ ] Remove / secure real API key
-- [ ] Write a short privacy notice (no personal data logging)
-- [ ] Add rate limiting if public
-- [ ] Consider disclaimers (accuracy, not a substitute for professional advice)
+
+## 9) Security & Performance
+- API key is server‑side only (in `.env`). Never expose it in JS.
+- Whole conversation is sent each time; consider trimming/summarization for long chats.
+- Regex markdown is fine for typical messages; heavy docs may need a proper markdown parser.
 
 ---
-## 9. Code Reading Map (Fast Reference)
-| Function | Why It Exists |
-|----------|---------------|
-| `initTheme` | Loads saved theme preference |
-| `toggleTheme` | Switches theme + persists preference |
-| `addMessage` | Renders any bubble (user / ai / typing) |
-| `sendMessage` | Handles input → triggers API call |
-| `callLLM` | Orchestrates request/response lifecycle |
+
+## 10) Folder Structure (at a glance)
+```
+SPM_VibeCoder/
+├─ backend/
+│  ├─ __init__.py
+│  ├─ app.py         # FastAPI app
+│  ├─ config.py      # .env settings
+│  ├─ models.py      # Pydantic models
+│  └─ llm_client.py  # Groq client (httpx)
+├─ css/style.css
+├─ js/main.js
+├─ index.html
+├─ requirements.txt
+├─ .env.example
+└─ start.sh
+```
 
 ---
-## 10. Future Upgrade Ideas
-- Add voice input (Web Speech API)
-- Add “Regenerate response” button using last user message
-- Add message editing → re-submit modified user message
-- Add copy button for each AI message
-- Add token usage display (approximate) per response
-- Add skeleton loader for streaming
+
+## 11) Roadmap (easy next steps)
+- Streaming responses (SSE) for token‑by‑token output
+- Conversation persistence (DB) and history view
+- Multi‑model selector & temperature slider
+- Auth rate limiting if shared publicly
+- Tests (unit/integration) for backend endpoints
 
 ---
-## 11. Minimal Internal Contract
-Inputs: user text (string) → Output: assistant text (string)
-Errors surfaced as readable bubbles; system never hard-crashes silently.
+
+## 12) Minimal Contract & Limitations
+- Input: user text; Output: assistant text.
+- Errors returned as `{ error: string }` in responses.
+- Limitations: re‑sending full history, non‑streaming replies, simple markdown.
 
 ---
-## 12. Limitations
-- Entire conversation re-sent each time (inefficient for huge chats)
-- Client-side key exposure
-- No streaming (full response waits)
-- Basic markdown; complex tables not supported
 
----
-## 13. Maintenance Tips
-- Keep dependencies minimal (currently none)
-- Rotate API key periodically
-- Log errors meaningfully if adding backend
-- Version control large UI changes separately
-
----
-## 14. Glossary Quick Link
-See Section 6 above for fast term meanings.
+## 13) Credits
+Built by Mahir, Rafid & Mehedi. Powered by Groq LLM.

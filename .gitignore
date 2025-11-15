@@ -17,3 +17,16 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Build output
+dist/
+build/
+
+# Temporary files
+tmp/
+*.tmp
+*.swp
+
+# python venv
+venv/
+__pycache__/

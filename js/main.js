@@ -75,29 +75,18 @@ async function callLLM() {
   addMessage("", "typing");
 
   try {
-    if (!API_CONFIG || !API_CONFIG.url || !API_CONFIG.key || !API_CONFIG.model) {
-      throw new Error("API configuration missing. Check config/api.js");
-    }
-
-    const response = await fetch(API_CONFIG.url, {
+    // Call Python FastAPI backend
+    const response = await fetch('http://127.0.0.1:8000/api/chat', {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_CONFIG.key}`
-      },
-      body: JSON.stringify({
-        model: API_CONFIG.model,
-        messages: conversationHistory,  // Now always has at least 1 message
-        temperature: 0.7,
-        max_tokens: 1024
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: conversationHistory })
     });
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("Groq Error:", response.status, err);
+      console.error("Backend Error:", response.status, err);
       document.querySelector('.message.typing')?.remove();
-      addMessage(`Groq Error ${response.status}: ${err}`, "ai");
+      addMessage(`Backend Error ${response.status}: ${err}`, "ai");
       sendBtn.disabled = false;
       return;
     }
@@ -105,12 +94,13 @@ async function callLLM() {
     const data = await response.json();
     document.querySelector('.message.typing')?.remove();
 
-    if (data.choices?.[0]?.message?.content) {
-      const reply = data.choices[0].message.content.trim();
-      addMessage(reply, "ai");
-      conversationHistory.push({ role: "assistant", content: reply });
+    if (data.error) {
+      addMessage(`Error: ${data.error}` , "ai");
+    } else if (data.reply) {
+      addMessage(data.reply, "ai");
+      conversationHistory.push({ role: "assistant", content: data.reply });
     } else {
-      addMessage("Empty response. Check console.", "ai");
+      addMessage("Empty response from backend.", "ai");
     }
   } catch (err) {
     document.querySelector('.message.typing')?.remove();
@@ -140,3 +130,28 @@ userInput.addEventListener('keypress', e => {
 sendBtn.addEventListener('click', sendMessage);
 
 window.onload = () => userInput.focus();
+
+// Debug toolkit for browser console
+window.ChatDebug = {
+  memory: () => {
+    console.log("💬 Conversation History:");
+    conversationHistory.forEach((m, i) => console.log(`[${i}] ${m.role}:`, m.content));
+    return conversationHistory;
+  },
+  last: () => conversationHistory[conversationHistory.length - 1],
+  config: async () => (await fetch('http://127.0.0.1:8000/api/config')).json(),
+  health: async () => (await fetch('http://127.0.0.1:8000/api/health')).json(),
+  state: () => ({
+    count: conversationHistory.length,
+    theme: document.documentElement.getAttribute('data-theme'),
+    last: conversationHistory[conversationHistory.length - 1]
+  }),
+  inject: (role, content) => { conversationHistory.push({ role, content }); addMessage(content, role); },
+  clear: () => {
+    conversationHistory = [
+      { role: "system", content: "You are AI, a helpful and concise assistant. Use brief paragraphs and markdown when useful." }
+    ];
+    document.getElementById('messages').innerHTML = '<div class="message ai">Hi! I\'m AI. How can I help you?</div>';
+  }
+};
+console.log("🐛 ChatDebug ready: try ChatDebug.health(), ChatDebug.memory()");

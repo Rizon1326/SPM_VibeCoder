@@ -1,6 +1,6 @@
-# AI Chatbot
+# AI Chatbot Chatbot
 
-A simple AI chatbot powered by Groq LLM API, reengineered by Mahir, Rafid & Mehedi.
+A modern chatbot powered by Groq LLM with a clean UI and a Python FastAPI backend.
 
 ## Features
 - Clean and modern chat interface with **Light/Dark theme toggle**
@@ -11,8 +11,8 @@ A simple AI chatbot powered by Groq LLM API, reengineered by Mahir, Rafid & Mehe
 - Beautiful color schemes for both themes
 
 ## Prerequisites
+- Python 3.8+
 - A modern web browser (Chrome, Firefox, Safari, Edge)
-- Python 3.x (for running local server)
 - Groq API key (free tier available)
 
 ## Setup Instructions
@@ -24,53 +24,34 @@ A simple AI chatbot powered by Groq LLM API, reengineered by Mahir, Rafid & Mehe
 4. Copy your API key
 
 ### 2. Configure the API Key
-1. Open `config/api.js` in your favorite text editor
-2. Replace the placeholder API key with your actual key:
-```javascript
-const API_CONFIG = {
-  url: "https://api.groq.com/openai/v1/chat/completions",
-  key: "YOUR_ACTUAL_API_KEY_HERE",  // Replace this!
-  model: "llama-3.1-70b-versatile"
-};
+```bash
+cp .env.example .env
+# Edit .env and add: GROQ_API_KEY=your_key_here
 ```
 
-### 3. Run the Project
-
-#### Quick Start (Recommended - Handles Port Conflicts!)
+### 3. Run the Project (Backend + Frontend)
 ```bash
-# Navigate to project directory
-cd /home/bs00793/Desktop/SPM/SPM_VibeCoder
-
-# Run the start script (automatically frees port 5500 if occupied)
+chmod +x start.sh
 ./start.sh
 ```
 
-The script will:
-- ✅ Automatically kill any process using port 5500
-- ✅ Start the server on `http://127.0.0.1:5500`
-- ✅ Display instructions to open in browser
-
-Then open your browser and go to: `http://127.0.0.1:5500/index.html`
+This starts:
+- Frontend: http://127.0.0.1:5500/index.html
+- Backend:  http://127.0.0.1:8000 (docs at /docs)
 
 ---
 
 #### Alternative Options:
 
-**Option A: Using Python Directly**
+**Option A: Start Backend Only**
 ```bash
-# If port 5500 is occupied, first kill it:
-lsof -ti:5500 | xargs kill -9
-
-# Then run the server:
-python3 -m http.server 5500
+python3 -m uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-**Option B: Using a Different Port**
+**Option B: Start Frontend Only**
 ```bash
-# Use any available port (e.g., 8000)
-python3 -m http.server 8000
-
-# Then open: http://127.0.0.1:8000/index.html
+python3 -m http.server 5500
+open http://127.0.0.1:5500/index.html
 ```
 
 **Option C: Using Node.js (if installed)**
@@ -116,18 +97,13 @@ python3 -m http.server 8000
 # Open: http://127.0.0.1:8000/index.html
 ```
 
-### Error 405: Method Not Allowed
-- Make sure you're using a proper HTTP server (not just opening the HTML file directly)
-- The browser's CORS policy requires a server
-
-### Groq Error 401: Unauthorized
-- Your API key is invalid or expired
-- Get a new key from [Groq Console](https://console.groq.com/keys)
-
-### Groq Error 429: Rate Limit
-- You've exceeded the free tier limits
-- Wait a few minutes and try again
-- Consider upgrading your Groq plan
+### Backend not reachable / CORS
+- Ensure backend is running on port 8000
+- Use `ChatDebug.health()` in the browser console
+ 
+### Unauthorized / Empty responses
+- Verify `.env` exists and `GROQ_API_KEY` is set
+- Restart backend after changing `.env`
 
 ### Network Error
 - Check your internet connection
@@ -137,25 +113,28 @@ python3 -m http.server 8000
 ## Project Structure
 ```
 SPM_VibeCoder/
-├── index.html          # Main HTML file
-├── config/
-│   └── api.js         # API configuration (API key here!)
+├── backend/
+│   ├── __init__.py
+│   ├── app.py         # FastAPI app
+│   ├── config.py      # Settings loader (.env)
+│   ├── models.py      # Pydantic models
+│   └── llm_client.py  # Groq client (httpx)
+├── requirements.txt   # Python deps
+├── .env.example       # Env template
+├── start.sh           # Launch frontend+backend
+├── index.html         # Frontend UI
 ├── css/
-│   └── style.css      # Styling
-├── js/
-│   └── main.js        # Application logic
-└── README.md          # This file
+│   └── style.css
+└── js/
+	└── main.js
 ```
 
 ## Security Note
-⚠️ **Never commit your API key to version control!**
-- Add `config/api.js` to `.gitignore`
-- Use environment variables in production
-- Regenerate your key if accidentally exposed
+⚠️ Never expose API keys in frontend. Keys are now stored in `.env` and used server-side only.
 
 ## Credits
 Reengineered by: Mahir, Rafid & Mehedi  
-Powered by: Groq LLM API
+Powered by: Groq LLM
 
 ## License
 Educational project for SPM course

@@ -1,41 +1,60 @@
 #!/bin/bash
-# Quick start script for AI Chatbot
-
+# Start both frontend (static) and backend (FastAPI)
 set -e
 
-PORT=${PORT:-5500}
+FRONTEND_PORT=${FRONTEND_PORT:-5500}
+BACKEND_PORT=${BACKEND_PORT:-8000}
 HOST=${HOST:-127.0.0.1}
 
 echo "========================================="
 echo "  AI Chatbot"
-echo "  Starting local server..."
+echo "  Starting Frontend & Backend..."
 echo "========================================="
 echo ""
-echo "📝 Make sure you have configured your API key in config/api.js"
-echo ""
 
-# Kill any process already using the port
-echo "� Checking if port ${PORT} is already in use..."
-if lsof -ti:${PORT} >/dev/null 2>&1; then
-	echo "⚠️  Port ${PORT} is busy. Stopping the existing process..."
-	# Try fuser first (common on Linux), then lsof/kill fallback
-	if command -v fuser >/dev/null 2>&1; then
-		fuser -k ${PORT}/tcp || true
+# Ensure .env exists
+if [ ! -f .env ]; then
+	if [ -f .env.example ]; then
+		cp .env.example .env
+		echo "⚠️  Created .env from template. Edit it to add your GROQ_API_KEY."
 	else
-		lsof -ti:${PORT} | xargs -r kill -9 || true
+		echo "⚠️  .env.example missing. Please create .env with GROQ_API_KEY first."
 	fi
-	sleep 1
-else
-	echo "✅ Port ${PORT} is free."
 fi
 
-echo "�🚀 Starting server on http://${HOST}:${PORT}"
-echo ""
-echo "💡 Open your browser and go to:"
-echo "   http://${HOST}:${PORT}/index.html"
-echo ""
-echo "Press Ctrl+C to stop the server"
-echo ""
+# Free ports
+for port in $FRONTEND_PORT $BACKEND_PORT; do
+	if lsof -ti:${port} >/dev/null 2>&1; then
+		echo "Killing process on port ${port}..."
+		lsof -ti:${port} | xargs -r kill -9 || true
+	fi
+done
 
-# Start the Python HTTP server
-python3 -m http.server ${PORT}
+# Install deps if needed
+if ! python3 -c "import fastapi, httpx, pydantic" 2>/dev/null; then
+	echo "Installing Python dependencies..."
+	pip install -r requirements.txt
+fi
+
+cleanup() {
+	echo "\nStopping servers..."
+	kill $BACKEND_PID $FRONTEND_PID 2>/dev/null || true
+}
+trap cleanup SIGINT SIGTERM
+
+echo "Starting backend on http://${HOST}:${BACKEND_PORT}"
+python3 -m uvicorn backend.app:app --host ${HOST} --port ${BACKEND_PORT} --reload &
+BACKEND_PID=$!
+
+sleep 2
+
+echo "Starting frontend on http://${HOST}:${FRONTEND_PORT}"
+python3 -m http.server ${FRONTEND_PORT} &
+FRONTEND_PID=$!
+
+echo "\nFrontend: http://${HOST}:${FRONTEND_PORT}/index.html"
+echo "Backend:  http://${HOST}:${BACKEND_PORT}"
+echo "Docs:     http://${HOST}:${BACKEND_PORT}/docs"
+echo "\nPress Ctrl+C to stop both."
+
+wait
