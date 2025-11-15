@@ -36,19 +36,48 @@
     </div>
     <div class="messages" id="messages">
       <div class="message ai">
-        👋 Hello! I'm <strong>AI Assistant</strong>, your intelligent assistant. I'm here to help you with:<br><br>
-        • Answering questions<br>
-        • Explaining concepts<br>
-        • Brainstorming ideas<br>
-        • Writing assistance<br><br>
-        How can I assist you today?
+        👋 Hello! I'm <strong>AI Code Assistant</strong>, your industry-grade code generator.<br><br>
+        <strong></> Code Mode:</strong> Click the <strong>Code</strong> button for strict code-only generation<br>
+        <strong>📊 Verification:</strong> Use <strong>Score</strong> to verify code correctness with CodeBLEU<br>
+        <strong>💬 Chat Mode:</strong> Use <strong>Send</strong> for conversational assistance<br><br>
+        Ready to generate production-quality code!
       </div>
     </div>
     <div class="input-area">
-      <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
+      <input type="text" id="userInput" placeholder="Type your message or code request..." autocomplete="off" />
       <button id="sendBtn">
         <span>Send</span>
       </button>
+      <button id="codeGenBtn" class="secondary-btn" title="Generate code with strict code-only mode">
+        <span></> Code</span>
+      </button>
+      <button id="codeBleuBtn" class="secondary-btn" title="Verify code correctness with CodeBLEU">
+        <span>Verify</span>
+      </button>
+    </div>
+    
+    <!-- CodeBLEU Verification Panel -->
+    <div id="codebleu-panel" class="codebleu-panel">
+      <div class="panel-header">
+        <h3>🔍 Code Correctness Verification</h3>
+        <button id="close-codebleu-btn" class="close-btn">✕</button>
+      </div>
+      <div class="panel-content">
+        <div class="code-input-group">
+          <label for="generated-code-input">AI-Generated Code:</label>
+          <textarea id="generated-code-input" placeholder="Auto-filled from last generation..." rows="10"></textarea>
+        </div>
+        <div class="code-input-group">
+          <label for="reference-code-input">Reference Code (Expected/Correct Solution):</label>
+          <textarea id="reference-code-input" placeholder="Paste your reference/expected code here..." rows="10"></textarea>
+        </div>
+        <button id="calculate-codebleu-btn" class="calculate-btn">🎯 Verify Code Correctness</button>
+        <div id="codebleu-result" class="codebleu-result">
+          <p style="color: var(--text-tertiary); text-align: center; padding: 20px;">
+            ℹ️ Enter both codes and click "Verify" to check correctness using CodeBLEU metric.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 

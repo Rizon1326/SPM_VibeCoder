@@ -12,12 +12,12 @@ class GroqClient:
         self.model = model or settings.groq_model
         self.api_url = api_url or settings.groq_api_url
 
-    async def chat(self, messages: List[Message]) -> Dict[str, Any]:
+    async def chat(self, messages: List[Message], temperature: float = 0.7, max_tokens: int = 1024) -> Dict[str, Any]:
         payload = {
             "model": self.model,
             "messages": [m.dict() for m in messages],
-            "temperature": 0.7,
-            "max_tokens": 1024,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
         }
         headers = {
             "Content-Type": "application/json",
