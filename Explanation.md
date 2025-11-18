@@ -1,305 +1,165 @@
-# AI Code Assistant - Complete Technical Explanation# AI Chatbot — Project Explanation
+# AI Code Assistant - Complete Technical Explanation
 
+**An industry-grade AI code generator with strict code-only output and automated CodeBLEU verification**
 
+Reengineered by: **Mahir, Rafid & Mehedi**
 
-**An industry-grade AI code generator with strict code-only output and automated CodeBLEU verification**An AI-powered conversational assistant with a clean web UI (HTML/CSS/JS) and a Python FastAPI backend calling the Groq LLM API. Reengineered by Mahir, Rafid & Mehedi.
+---
 
+## 📋 Table of Contents
 
-
-Reengineered by: **Mahir, Rafid & Mehedi**---
-
-
-
----## 1) Plain‑English Overview
-
-- You type a prompt and press Send.
-
-## 📋 Table of Contents- The browser sends the whole conversation (messages) to the local Python backend.
-
-- The backend calls Groq’s model with your conversation and returns the reply.
-
-1. [Project Overview](#1-project-overview)- The UI renders the assistant’s response as a chat bubble. You repeat.
-
-2. [Architecture](#2-architecture)- Light/Dark theme can be toggled anytime.
-
+1. [Project Overview](#1-project-overview)
+2. [Architecture](#2-architecture)
 3. [Core Components](#3-core-components)
-
-4. [Request Flow](#4-request-flow)Key point: your API key lives on the server (.env), not in the browser.
-
+4. [Request Flow](#4-request-flow)
 5. [API Endpoints](#5-api-endpoints)
-
-6. [Data Models](#6-data-models)---
-
+6. [Data Models](#6-data-models)
 7. [Frontend Details](#7-frontend-details)
+8. [Backend Details](#8-backend-details)
+9. [CodeBLEU Verification](#9-codebleu-verification)
+10. [Configuration](#10-configuration)
+11. [Security & Best Practices](#11-security--best-practices)
+12. [Code Examples](#12-code-examples)
 
-8. [Backend Details](#8-backend-details)## 2) Architecture (What lives where)
+---
 
-9. [CodeBLEU Verification](#9-codebleu-verification)- Frontend (static): `index.html`, `css/style.css`, `js/main.js`
+## 1. Project Overview
 
-10. [Configuration](#10-configuration)  - Renders chat UI, manages theme, stores `conversationHistory`, calls backend.
-
-11. [Security & Best Practices](#11-security--best-practices)- Backend (Python): `backend/`
-
-12. [Code Examples](#12-code-examples)  - `backend/app.py` — FastAPI app with endpoints `/api/chat`, `/api/health`, `/api/config`
-
-  - `backend/models.py` — Pydantic models: `Message`, `ChatRequest`, `ChatResponse`
-
----  - `backend/llm_client.py` — Async httpx client for Groq API
-
-  - `backend/config.py` — Loads `.env` (GROQ_API_KEY, GROQ_MODEL, GROQ_API_URL)
-
-## 1. Project Overview- Startup: `start.sh` runs both servers (frontend on 5500, backend on 8000)
-
-- Dependencies: `requirements.txt`
-
-### What is This?- Environment template: `.env.example`
+### What is This?
 
 This is a **dual-mode AI assistant** that combines:
 
-- **💬 Conversational Chat Mode**: Normal Q&A with explanations and context---
-
+- **💬 Conversational Chat Mode**: Normal Q&A with explanations and context
 - **💻 Strict Code Generation Mode**: Returns ONLY executable code with NO explanations
-
-- **📊 Automated Verification**: CodeBLEU metric to verify code correctness## 3) Message Contract (Core data)
-
-`Message`: `{ role: "system" | "user" | "assistant", content: string }`
+- **📊 Automated Verification**: CodeBLEU metric to verify code correctness
 
 ### Why Two Modes?
 
-- **Chat Mode** (Temperature 0.7): Creative, helpful, explains conceptsFrontend keeps an array `conversationHistory` like:
+- **Chat Mode** (Temperature 0.7): Creative, helpful, explains concepts
+- **Code Mode** (Temperature 0.1): Deterministic, correct, production-ready code
+- **Verify Mode**: Automatically checks if generated code matches expected solution
 
-- **Code Mode** (Temperature 0.1): Deterministic, correct, production-ready code```json
+### Key Innovation
 
-- **Verify Mode**: Automatically checks if generated code matches expected solution[
+Traditional code generators mix code with explanations. This project **strictly separates** them:
 
-  { "role": "system", "content": "You are AI..." },
+- Click **"Send"** → Get explanations and discussion
+- Click **"💻 Code"** → Get ONLY raw, executable code
+- Click **"📊 Verify"** → Get objective correctness score (0-100%)
 
-### Key Innovation  { "role": "user", "content": "Hello" },
+---
 
-Traditional code generators mix code with explanations. This project **strictly separates** them:  { "role": "assistant", "content": "Hi! How can I help?" }
+## 2. Architecture
 
-- Click **"Send"** → Get explanations and discussion]
+### System Diagram
 
-- Click **"Code"** → Get ONLY raw, executable code```
-
-- Click **"Verify"** → Get objective correctness score (0-100%)Every time you send a message, the full array is POSTed to the backend.
-
-
-
-------
-
-
-
-## 2. Architecture## 4) Request Flow (End‑to‑end)
-
-1) User sends text → `sendMessage()` pushes to `conversationHistory` → calls `callLLM()`.
-
-### System Diagram2) Frontend POSTs to `http://127.0.0.1:8000/api/chat` with `{ messages: [...] }`.
-
-```3) Backend validates, builds Groq payload and calls Groq via httpx.
-
-┌─────────────────────────────────────────────────────────────┐4) Backend extracts the assistant content and responds: `{ reply: "...", error: null }`.
-
-│                     USER BROWSER                            │5) Frontend renders the reply, scrolls to bottom, re‑enables Send.
-
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     USER BROWSER                            │
 │  ┌──────────────────────────────────────────────────────┐  │
-
-│  │  index.html + CSS + JavaScript (main.js)             │  │---
-
+│  │  index.html + CSS + JavaScript (main.js)             │  │
 │  │  - Chat UI with Light/Dark theme                     │  │
-
-│  │  - 3 Buttons: Send, Code, Verify                     │  │## 5) API Endpoints (Backend)
-
-│  │  - Verification Panel (sliding from right)           │  │- GET `/api/health` → `{ status: "ok", model: "...", api_configured: true|false }`
-
-│  └────────────┬─────────────────────────────────────────┘  │- GET `/api/config` → safe config (API key masked)
-
-│               │ HTTP Requests (JSON)                        │- POST `/api/chat` → body: `{ messages: Message[] }` → response: `{ reply?: string, error?: string }`
-
+│  │  - 3 Buttons: Send, Code, Verify                     │  │
+│  │  - Verification Panel (sliding from right)           │  │
+│  └────────────┬─────────────────────────────────────────┘  │
+│               │ HTTP Requests (JSON)                        │
 └───────────────┼─────────────────────────────────────────────┘
-
-                │Example curl (chat):
-
-                ▼```bash
-
-┌─────────────────────────────────────────────────────────────┐curl -X POST http://127.0.0.1:8000/api/chat \
-
-│              FASTAPI BACKEND (Python)                       │  -H "Content-Type: application/json" \
-
-│  ┌──────────────────────────────────────────────────────┐  │  -d '{
-
-│  │  app.py - 4 Main Endpoints:                          │  │    "messages": [
-
-│  │  1. POST /api/chat         → Conversational mode     │  │      {"role": "system", "content": "You are a helpful assistant."},
-
-│  │  2. POST /api/generate_code → Strict code mode       │  │      {"role": "user", "content": "Hello!"}
-
-│  │  3. POST /api/verify_code   → CodeBLEU verification  │  │    ]
-
-│  │  4. POST /api/download_code → File download          │  │  }'
-
-│  └────────────┬─────────────────────────────────────────┘  │```
-
+                │
+                ▼
+┌─────────────────────────────────────────────────────────────┐
+│              FASTAPI BACKEND (Python)                       │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  app.py - 4 Main Endpoints:                          │  │
+│  │  1. POST /api/chat         → Conversational mode     │  │
+│  │  2. POST /api/generate_code → Strict code mode       │  │
+│  │  3. POST /api/verify_code   → CodeBLEU verification  │  │
+│  │  4. POST /api/download_code → File download          │  │
+│  └────────────┬─────────────────────────────────────────┘  │
 │               │                                             │
-
-│  ┌────────────▼─────────────────────────────────────────┐  │---
-
+│  ┌────────────▼─────────────────────────────────────────┐  │
 │  │  llm_client.py - Groq API Client (httpx)             │  │
-
-│  └────────────┬─────────────────────────────────────────┘  │## 6) Environment (.env)
-
-└───────────────┼─────────────────────────────────────────────┘From `.env.example` (edit `.env`):
-
-                │```env
-
-                ▼GROQ_API_KEY=your_groq_api_key_here
-
-┌─────────────────────────────────────────────────────────────┐GROQ_API_URL=https://api.groq.com/openai/v1/chat/completions
-
-│                 GROQ LLM API (External)                     │GROQ_MODEL=llama-3.3-70b-versatile
-
-│              llama-3.3-70b-versatile                        │HOST=127.0.0.1
-
-└─────────────────────────────────────────────────────────────┘PORT=8000
-
-``````
-
-Note: the backend has a default, but the `.env` values override it. Keep your API key secret.
+│  └────────────┬─────────────────────────────────────────┘  │
+└───────────────┼─────────────────────────────────────────────┘
+                │
+                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 GROQ LLM API (External)                     │
+│              llama-3.3-70b-versatile                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### Technology Stack
 
----
-
 **Frontend:**
 
-- Pure HTML5, CSS3, Vanilla JavaScript (no frameworks)## 7) How to Run (Local)
+- Pure HTML5, CSS3, Vanilla JavaScript (no frameworks)
+- CSS Variables for theming
+- LocalStorage for theme persistence
+- Fetch API for HTTP requests
 
-- CSS Variables for theming```bash
+**Backend:**
 
-- LocalStorage for theme persistencepip install -r requirements.txt
-
-- Fetch API for HTTP requestscp .env.example .env    # add your GROQ_API_KEY
-
-chmod +x start.sh
-
-**Backend:**./start.sh
-
-- FastAPI (async Python web framework)```
-
-- Pydantic (data validation)Open frontend: http://127.0.0.1:5500/index.html
-
-- httpx (async HTTP client)Backend docs: http://127.0.0.1:8000/docs
-
+- FastAPI (async Python web framework)
+- Pydantic (data validation)
+- httpx (async HTTP client)
 - uvicorn (ASGI server)
-
----
 
 **Code Analysis:**
 
-- CodeBLEU (industry-standard code similarity metric)## 8) Frontend Details
+- CodeBLEU (industry-standard code similarity metric)
+- Black (Python code formatter)
+- Tree-sitter (syntax parsing)
 
-- Black (Python code formatter)- `initTheme()` / `toggleTheme()` controls the theme (persisted in localStorage).
+---
 
-- Tree-sitter (syntax parsing)- `addMessage()` renders bubbles with simple markdown (bold, italic, code, lists, headers).
+## 3. Core Components
 
-- `callLLM()` now calls the Python backend (no more client‑side API key).
+### 3.1 Frontend Structure
 
----- Console helpers: `ChatDebug.health()`, `ChatDebug.config()`, `ChatDebug.memory()`, `ChatDebug.clear()`.
-
-
-
-## 3. Core Components---
-
-
-
-### 3.1 Frontend Structure## 9) Security & Performance
-
-- API key is server‑side only (in `.env`). Never expose it in JS.
-
-```- Whole conversation is sent each time; consider trimming/summarization for long chats.
-
-├── index.html              # Main UI structure- Regex markdown is fine for typical messages; heavy docs may need a proper markdown parser.
-
+```
+├── index.html              # Main UI structure
 ├── css/style.css           # Theming & responsive design
-
-└── js/main.js              # Application logic---
-
+└── js/main.js              # Application logic
 ```
 
-## 10) Folder Structure (at a glance)
+**Key Frontend Variables:**
 
-**Key Frontend Variables:**```
+```javascript
+conversationHistory = [...]  // Full chat context
+lastGeneratedCode = null     // Last code for verification
+```
 
-```javascriptSPM_VibeCoder/
+**Key Frontend Functions:**
 
-conversationHistory = [...]  // Full chat context├─ backend/
+```javascript
+sendMessage()         // Chat mode - conversational
+generateCode()        // Code mode - strict code only
+calculateCodeBLEU()   // Verification mode
+downloadCode()        // Save as .py, .java, .cpp, etc.
+```
 
-lastGeneratedCode = null     // Last code for verification│  ├─ __init__.py
+### 3.2 Backend Structure
 
-```│  ├─ app.py         # FastAPI app
-
-│  ├─ config.py      # .env settings
-
-**Key Frontend Functions:**│  ├─ models.py      # Pydantic models
-
-```javascript│  └─ llm_client.py  # Groq client (httpx)
-
-sendMessage()         // Chat mode - conversational├─ css/style.css
-
-generateCode()        // Code mode - strict code only├─ js/main.js
-
-calculateCodeBLEU()   // Verification mode├─ index.html
-
-downloadCode()        // Save as .py, .java, .cpp, etc.├─ requirements.txt
-
-```├─ .env.example
-
-└─ start.sh
-
-### 3.2 Backend Structure```
-
-
-
-```---
-
+```
 backend/
-
-├── __init__.py            # Package marker## 11) Roadmap (easy next steps)
-
-├── app.py                 # FastAPI application (4 endpoints)- Streaming responses (SSE) for token‑by‑token output
-
-├── config.py              # Environment configuration- Conversation persistence (DB) and history view
-
-├── models.py              # Pydantic data models (7 classes)- Multi‑model selector & temperature slider
-
-├── llm_client.py          # Groq API client- Auth rate limiting if shared publicly
-
-└── utils/- Tests (unit/integration) for backend endpoints
-
+├── __init__.py            # Package marker
+├── app.py                 # FastAPI application (4 endpoints)
+├── config.py              # Environment configuration
+├── models.py              # Pydantic data models (7 classes)
+├── llm_client.py          # Groq API client
+└── utils/
     ├── __init__.py
-
-    ├── code_utils.py      # Code extraction & sanitization---
-
+    ├── code_utils.py      # Code extraction & sanitization
     └── codebleu_utils.py  # CodeBLEU calculation
-
-```## 12) Minimal Contract & Limitations
-
-- Input: user text; Output: assistant text.
-
-### 3.3 Configuration Files- Errors returned as `{ error: string }` in responses.
-
-- Limitations: re‑sending full history, non‑streaming replies, simple markdown.
-
 ```
 
-├── .env                   # Secrets (API key) - NOT in git---
+### 3.3 Configuration Files
 
+```
+├── .env                   # Secrets (API key) - NOT in git
 ├── .env.example           # Template for .env
-
-├── requirements.txt       # Python dependencies## 13) Credits
-
-└── start.sh              # Launch script (frontend + backend)Built by Mahir, Rafid & Mehedi. Powered by Groq LLM.
-
+├── requirements.txt       # Python dependencies
+└── start.sh              # Launch script (frontend + backend)
 ```
 
 ---
@@ -323,7 +183,7 @@ backend/
 ### 4.2 Strict Code Generation Flow
 
 ```
-1. User types "write a factorial function" → clicks "Code"
+1. User types "write a factorial function" → clicks "💻 Code"
 2. Frontend: detectLanguage() identifies "python"
 3. Frontend: generateCode() sends POST /api/generate_code
    Body: { prompt: "...", language: "python", temperature: 0.1 }
@@ -346,7 +206,7 @@ backend/
 ### 4.3 Code Verification Flow
 
 ```
-1. User pastes reference code and generated code → clicks "Verify"
+1. User pastes reference code and generated code → clicks "📊 Verify"
 2. Frontend: calculateCodeBLEU() sends POST /api/verify_code
    Body: { 
      reference: "def factorial(n):\n  return math.factorial(n)",
@@ -374,10 +234,12 @@ backend/
 
 ### 5.1 Health & Config Endpoints
 
-#### `GET /api/health`
+#### GET /api/health
+
 **Purpose:** Check backend status and LLM configuration
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -386,10 +248,12 @@ backend/
 }
 ```
 
-#### `GET /api/config`
+#### GET /api/config
+
 **Purpose:** Get safe configuration (API key masked)
 
 **Response:**
+
 ```json
 {
   "model": "llama-3.3-70b-versatile",
@@ -401,10 +265,12 @@ backend/
 
 ### 5.2 Chat Endpoint
 
-#### `POST /api/chat`
+#### POST /api/chat
+
 **Purpose:** Conversational mode with explanations
 
 **Request:**
+
 ```json
 {
   "messages": [
@@ -415,6 +281,7 @@ backend/
 ```
 
 **Response:**
+
 ```json
 {
   "reply": "Binary search is an efficient algorithm...",
@@ -426,10 +293,12 @@ backend/
 
 ### 5.3 Code Generation Endpoint
 
-#### `POST /api/generate_code`
+#### POST /api/generate_code
+
 **Purpose:** Strict code-only generation
 
 **Request:**
+
 ```json
 {
   "prompt": "write a function to find prime numbers",
@@ -439,6 +308,7 @@ backend/
 ```
 
 **Response:**
+
 ```json
 {
   "code": "def is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True",
@@ -453,6 +323,7 @@ backend/
 ```
 
 **Key Features:**
+
 - 6-rule strict system prompt
 - Temperature 0.1 (deterministic)
 - Automatic code extraction (removes markdown)
@@ -460,10 +331,12 @@ backend/
 
 ### 5.4 Code Verification Endpoint
 
-#### `POST /api/verify_code`
+#### POST /api/verify_code
+
 **Purpose:** Calculate CodeBLEU score for correctness
 
 **Request:**
+
 ```json
 {
   "reference": "def factorial(n):\n    return math.factorial(n)",
@@ -474,6 +347,7 @@ backend/
 ```
 
 **Response:**
+
 ```json
 {
   "available": true,
@@ -487,6 +361,7 @@ backend/
 ```
 
 **Score Interpretation:**
+
 - **≥ 0.70**: Production-ready (industry standard)
 - **0.50-0.69**: Good similarity, minor differences
 - **0.30-0.49**: Moderate similarity, needs review
@@ -494,10 +369,12 @@ backend/
 
 ### 5.5 Download Endpoint
 
-#### `POST /api/download_code`
+#### POST /api/download_code
+
 **Purpose:** Download code as proper source file
 
 **Request:**
+
 ```json
 {
   "code": "def hello():\n    print('Hello')",
@@ -568,6 +445,7 @@ class CodeBleuResponse(BaseModel):
 ### 7.1 Theme System
 
 **Implementation:**
+
 ```javascript
 // CSS Variables in :root[data-theme="light"] and :root[data-theme="dark"]
 function toggleTheme() {
@@ -583,6 +461,7 @@ function toggleTheme() {
 ### 7.2 Message Rendering
 
 **Markdown Support:**
+
 - **Bold:** `**text**` → `<strong>text</strong>`
 - **Italic:** `*text*` → `<em>text</em>`
 - **Code:** `` `code` `` → `<code>code</code>`
@@ -607,6 +486,7 @@ function detectLanguage(prompt) {
 ### 7.4 Debug Toolkit
 
 **Browser Console Helpers:**
+
 ```javascript
 ChatDebug.health()        // Check backend status
 ChatDebug.config()        // View configuration
@@ -623,6 +503,7 @@ ChatDebug.clear()         // Reset conversation
 ### 8.1 Environment Configuration
 
 **config.py:**
+
 ```python
 class Settings(BaseModel):
     groq_api_url: str = os.getenv("GROQ_API_URL", "...")
@@ -637,6 +518,7 @@ class Settings(BaseModel):
 ### 8.2 LLM Client
 
 **Groq API Client (httpx):**
+
 ```python
 async def chat(self, messages: List[Message], temperature: float = 0.7, max_tokens: int = 1024):
     payload = {
@@ -655,6 +537,7 @@ async def chat(self, messages: List[Message], temperature: float = 0.7, max_toke
 ```
 
 **Key Parameters:**
+
 - `temperature=0.1`: Code generation (deterministic)
 - `temperature=0.7`: Chat mode (creative)
 - `max_tokens=2048`: Code generation
@@ -663,17 +546,21 @@ async def chat(self, messages: List[Message], temperature: float = 0.7, max_toke
 ### 8.3 Code Utilities
 
 #### extract_code_block()
+
 **Purpose:** Remove markdown code blocks if LLM violates rules
 
 **Logic:**
+
 1. Try ` ```python\ncode\n``` ` pattern
 2. Try generic ` ```\ncode\n``` ` pattern
 3. Return original if no markdown found
 
 #### is_code_like()
+
 **Purpose:** Validate text contains actual code
 
 **Patterns Checked:**
+
 - `def function_name(` (Python function)
 - `class ClassName` (Class definition)
 - `import module` (Import statements)
@@ -682,9 +569,11 @@ async def chat(self, messages: List[Message], temperature: float = 0.7, max_toke
 - `;` at line end (C/C++/Java)
 
 #### sanitize_filename()
+
 **Purpose:** Prevent path traversal attacks
 
 **Sanitization:**
+
 1. Remove `/\:*?"<>|` characters
 2. Strip leading/trailing `.` and spaces
 3. Add `.py` extension if missing
@@ -706,6 +595,7 @@ async def chat(self, messages: List[Message], temperature: float = 0.7, max_toke
 ### Why CodeBLEU?
 
 Traditional text metrics (BLEU, ROUGE) fail for code:
+
 ```python
 # Functionally identical, but text-based metrics give low scores:
 Code A: if x > 0: return True
@@ -770,6 +660,7 @@ PORT=8000
 ### Available Models
 
 **Groq Supported Models:**
+
 - `llama-3.3-70b-versatile` (default) - Best for code
 - `llama-3.1-70b-versatile` - Alternative
 - `mixtral-8x7b-32768` - Long context
@@ -777,6 +668,7 @@ PORT=8000
 ### Port Configuration
 
 **Default Ports:**
+
 - Frontend: `5500` (can change with `FRONTEND_PORT=8080`)
 - Backend: `8000` (can change with `PORT=8001`)
 
@@ -787,15 +679,18 @@ PORT=8000
 ### 11.1 Security Measures
 
 ✅ **API Key Protection:**
+
 - Stored in `.env` (server-side only)
 - Never exposed to browser
 - Masked in API responses: `gsk_****abc123`
 
 ✅ **Input Sanitization:**
+
 - Filename sanitization prevents path traversal
 - Pydantic validation on all inputs
 
 ✅ **CORS Configuration:**
+
 ```python
 # Development: Allow all origins
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
@@ -807,20 +702,24 @@ app.add_middleware(CORSMiddleware, allow_origins=["https://yourdomain.com"])
 ### 11.2 Performance Optimizations
 
 ⚡ **Async/Await:**
+
 - All LLM calls use `async`/`await`
 - Non-blocking I/O with httpx.AsyncClient
 
 ⚡ **Temperature Tuning:**
+
 - Code generation: 0.1 (faster, deterministic)
 - Chat mode: 0.7 (creative but slower)
 
 ⚡ **Token Limits:**
+
 - Code generation: 2048 tokens (larger responses)
 - Chat mode: 1024 tokens (concise answers)
 
 ### 11.3 Error Handling
 
 **Graceful Degradation:**
+
 ```python
 try:
     result = await client.chat(messages, temperature, max_tokens)
@@ -831,6 +730,7 @@ except Exception as e:
 ```
 
 **Frontend Error Display:**
+
 - Network errors shown in chat
 - API errors displayed with error icon
 - Verification errors shown in verification panel

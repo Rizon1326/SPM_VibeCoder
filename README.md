@@ -1,328 +1,187 @@
-# 🤖 AI Code Assistant - Strict Code Generator with Automated Verification# AI Chatbot Chatbot
+# 🤖 AI Code Assistant - Strict Code Generator with Automated Verification
 
-
-
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)# AI Code Assistant - Strict Code Generator with CodeBLEU Verification
-
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/License-Educational-orange.svg)](LICENSE)
 
-[![License](https://img.shields.io/badge/License-Educational-orange.svg)](LICENSE)An **industry-grade AI code generator** powered by Groq LLM with **strict code-only output** and **automated CodeBLEU verification** for ensuring code correctness.
+**An industry-grade AI code generator** with **strict code-only output** and **automated CodeBLEU verification** for ensuring code correctness.
 
-
-
-**An industry-grade AI code generator** with **strict code-only output** and **automated CodeBLEU verification** for ensuring code correctness.## 🎯 Core Features
-
-
-
-🎓 **Built by:** Mahir, Rafid & Mehedi  ### Strict Code Generation Mode
-
-⚡ **Powered by:** Groq LLM (llama-3.3-70b-versatile)  - ✅ **Code-Only Output** - NO explanations, NO comments, ONLY executable code
-
-📚 **Purpose:** SPM Course Project- ✅ **Multi-Language Support** - Python, Java, C++, JavaScript, TypeScript, Go, Rust, etc.
-
-- ✅ **Download as Files** - Get .py, .java, .cpp files directly
-
----- ✅ **Temperature 0.1** - Maximum determinism for correct code
-
-- ✅ **Production-Ready** - Clean, syntactically correct, executable code
-
-## ✨ Key Features
-
-### Automated Verification Tool
-
-### 💻 Strict Code Generation Mode- 📊 **CodeBLEU Metric** - Industry-standard code similarity measurement
-
-- ✅ **Code-Only Output** - NO explanations, NO comments, ONLY executable code- 📊 **Component Breakdown** - N-gram, Syntax, Dataflow analysis
-
-- ✅ **Multi-Language Support** - Python, Java, C++, JavaScript, TypeScript, Go, Rust, C#- 📊 **Correctness Score** - 70%+ indicates production-ready code
-
-- ✅ **Download as Files** - Get `.py`, `.java`, `.cpp` files directly- 📊 **Black Normalization** - Consistent formatting before comparison
-
-- ✅ **Temperature 0.1** - Maximum determinism for correct, production-ready code
-
-- ✅ **Smart Extraction** - Automatically removes markdown and explanatory text### Conversational Chat Mode
-
-- 💬 **General Assistance** - Questions, explanations, brainstorming
-
-### 📊 Automated Code Verification- 💬 **Light/Dark Theme** - Beautiful UI with theme persistence
-
-- 📊 **CodeBLEU Metric** - Industry-standard code similarity measurement- 💬 **Conversation Memory** - Maintains context throughout session
-
-- 📊 **4-Component Analysis** - N-gram, Weighted N-gram, Syntax (AST), Dataflow
-
-- 📊 **Correctness Score** - 70%+ indicates production-ready code## Features
-
-- 📊 **Black Normalization** - Consistent formatting before comparison- Clean and modern chat interface with **Light/Dark theme toggle**
-
-- 📊 **Color-Coded Verdicts** - Green (≥70%), Orange (30-70%), Red (<30%)- Powered by Groq's fast LLM models
-
-- Conversation history maintained
-
-### 💬 Conversational Chat Mode- Real-time responses
-
-- 💬 **General Assistance** - Questions, explanations, brainstorming- Theme preference saved in browser
-
-- 💬 **Context Memory** - Maintains conversation history throughout session- Beautiful color schemes for both themes
-
-- 💬 **Markdown Support** - Bold, italic, code blocks, lists, headers
-
-- 💬 **Light/Dark Theme** - Beautiful UI with theme persistence## Prerequisites
-
-- Python 3.8+
-
----- A modern web browser (Chrome, Firefox, Safari, Edge)
-
-- Groq API key (free tier available)
-
-## 🚀 Quick Start
-
-## Setup Instructions
-
-### Prerequisites
-
-- **Python 3.8+** (check: `python3 --version`)### 1. Get Your Groq API Key
-
-- **Groq API Key** ([Get free key](https://console.groq.com/keys))1. Visit [Groq Console](https://console.groq.com/keys)
-
-- **Modern web browser** (Chrome, Firefox, Safari, Edge)2. Sign up or log in to your account
-
-3. Create a new API key
-
-### Installation4. Copy your API key
-
-
-
-#### 1. Clone the Repository### 2. Configure the API Key
-
-```bash```bash
-
-git clone https://github.com/Rizon1326/SPM_VibeCoder.gitcp .env.example .env
-
-cd SPM_VibeCoder# Edit .env and add: GROQ_API_KEY=your_key_here
-
-``````
-
-
-
-#### 2. Create Virtual Environment (Recommended)### 3. Run the Project (Backend + Frontend)
-
-```bash```bash
-
-python3 -m venv venvchmod +x start.sh
-
-source venv/bin/activate  # On Windows: venv\Scripts\activate./start.sh
-
-``````
-
-
-
-#### 3. Install DependenciesThis starts:
-
-```bash- Frontend: http://127.0.0.1:5500/index.html
-
-pip install -r requirements.txt- Backend:  http://127.0.0.1:8000 (docs at /docs)
-
-```
+🎓 **Built by:** Mahir, Rafid & Mehedi  
+⚡ **Powered by:** Groq LLM (llama-3.3-70b-versatile)  
+📚 **Purpose:** SPM Course Project
 
 ---
 
-#### 4. Configure API Key
+## ✨ Key Features
 
-```bash#### Alternative Options:
+### 💻 Strict Code Generation Mode
 
-cp .env.example .env
+- ✅ **Code-Only Output** - NO explanations, NO comments, ONLY executable code
+- ✅ **Multi-Language Support** - Python, Java, C++, JavaScript, TypeScript, Go, Rust, C#
+- ✅ **Download as Files** - Get `.py`, `.java`, `.cpp` files directly
+- ✅ **Temperature 0.1** - Maximum determinism for correct, production-ready code
+- ✅ **Smart Extraction** - Automatically removes markdown and explanatory text
 
-# Edit .env and add: GROQ_API_KEY=your_key_here**Option A: Start Backend Only**
+### 📊 Automated Code Verification
 
-``````bash
+- 📊 **CodeBLEU Metric** - Industry-standard code similarity measurement
+- 📊 **4-Component Analysis** - N-gram, Weighted N-gram, Syntax (AST), Dataflow
+- 📊 **Correctness Score** - 70%+ indicates production-ready code
+- 📊 **Black Normalization** - Consistent formatting before comparison
+- 📊 **Color-Coded Verdicts** - Green (≥70%), Orange (30-70%), Red (<30%)
 
-python3 -m uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
+### 💬 Conversational Chat Mode
 
-**Get your Groq API key:**```
+- 💬 **General Assistance** - Questions, explanations, brainstorming
+- 💬 **Context Memory** - Maintains conversation history throughout session
+- 💬 **Markdown Support** - Bold, italic, code blocks, lists, headers
+- 💬 **Light/Dark Theme** - Beautiful UI with theme persistence
 
-1. Visit [https://console.groq.com/keys](https://console.groq.com/keys)
+---
 
-2. Sign up or log in**Option B: Start Frontend Only**
+## 🚀 Quick Start
 
-3. Create a new API key```bash
+### Prerequisites
 
-4. Copy and paste into `.env` filepython3 -m http.server 5500
+- **Python 3.8+** (check: `python3 --version`)
+- **Groq API Key** ([Get free key](https://console.groq.com/keys))
+- **Modern web browser** (Chrome, Firefox, Safari, Edge)
 
-open http://127.0.0.1:5500/index.html
+### Installation
 
-#### 5. Start the Application```
+#### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/Rizon1326/SPM_VibeCoder.git
+cd SPM_VibeCoder
+```
 
-chmod +x start.sh**Option C: Using Node.js (if installed)**
+#### 2. Create Virtual Environment (Recommended)
 
-./start.sh```bash
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-```npm install -g http-server
+#### 3. Install Dependencies
 
-http-server -p 5500
+```bash
+pip install -r requirements.txt
+```
 
-**This launches:**```
+#### 4. Configure API Key
 
-- ✅ Frontend: http://127.0.0.1:5500/index.html
+```bash
+cp .env.example .env
+# Edit .env and add: GROQ_API_KEY=your_key_here
+```
 
-- ✅ Backend: http://127.0.0.1:8000**Option D: Using VS Code Live Server Extension**
+**Get your Groq API key:**
 
-- ✅ API Docs: http://127.0.0.1:8000/docs1. Install "Live Server" extension in VS Code
+1. Visit <https://console.groq.com/keys>
+2. Sign up or log in
+3. Create a new API key
+4. Copy and paste into `.env` file
 
-2. Right-click on `index.html`
+#### 5. Start the Application
 
----3. Select "Open with Live Server"
+```bash
+chmod +x start.sh
+./start.sh
+```
 
+**This launches:**
 
+- ✅ Frontend: <http://127.0.0.1:5500/index.html>
+- ✅ Backend: <http://127.0.0.1:8000>
+- ✅ API Docs: <http://127.0.0.1:8000/docs>
 
-## 📖 How to Use## Usage
+---
 
-1. Type your message in the input box at the bottom
+## 📖 How to Use
 
-### Mode 1: Chat (Conversational)2. Click "Send" or press Enter
+### Mode 1: Chat (Conversational)
 
-1. Type your question: *"Explain how binary search works"*3. Wait for the AI to respond
-
-2. Click **"Send"** button4. Continue the conversation!
-
+1. Type your question: *"Explain how binary search works"*
+2. Click **"Send"** button
 3. Get detailed explanation with examples
-
-## Troubleshooting
 
 ### Mode 2: Code Generation (Strict)
 
-1. Type code request: *"write a factorial function in Python"*### Port Already in Use (Error: Address already in use)
-
-2. Click **"</> Code"** buttonIf you get `OSError: [Errno 98] Address already in use`:
-
+1. Type code request: *"write a factorial function in Python"*
+2. Click **"💻 Code"** button
 3. Get ONLY executable code (no explanations)
+4. Click **"📥 Download .py"** to save as file
 
-4. Click **"📥 Download .py"** to save as file**Solution 1: Use the start.sh script** (handles this automatically)
+### Mode 3: Code Verification
 
-```bash
-
-### Mode 3: Code Verification./start.sh
-
-1. Click **"Verify"** button to open verification panel```
-
+1. Click **"📊 Verify"** button to open verification panel
 2. Paste **AI-generated code** in top textarea (auto-filled)
-
-3. Paste **reference/expected code** in bottom textarea**Solution 2: Manually free the port**
-
-4. Click **"🎯 Verify Code Correctness"**```bash
-
-5. View CodeBLEU score with color-coded verdict:# Find and kill process using port 5500
-
-   - 🟢 **Green (≥70%)**: Production-readylsof -ti:5500 | xargs kill -9
-
+3. Paste **reference/expected code** in bottom textarea
+4. Click **"🎯 Verify Code Correctness"**
+5. View CodeBLEU score with color-coded verdict:
+   - 🟢 **Green (≥70%)**: Production-ready
    - 🟠 **Orange (30-70%)**: Needs improvement
+   - 🔴 **Red (<30%)**: Low correctness
 
-   - 🔴 **Red (<30%)**: Low correctness# Then start the server
+---
 
-python3 -m http.server 5500
+## 🎯 Usage Examples
 
----```
+### Example 1: Generate Python Code
 
+**Prompt:** `write a function to check if a number is prime`
 
+**Click:** 💻 Code
 
-## 🎯 Usage Examples**Solution 3: Use a different port**
+**Output:**
 
-```bash
-
-### Example 1: Generate Python Code# Use port 8000 instead
-
-**Prompt:** `write a function to check if a number is prime`python3 -m http.server 8000
-
-# Open: http://127.0.0.1:8000/index.html
-
-**Click:** </> Code```
-
-
-
-**Output:**### Backend not reachable / CORS
-
-```python- Ensure backend is running on port 8000
-
-def is_prime(n):- Use `ChatDebug.health()` in the browser console
-
-    if n < 2: 
-
-        return False### Unauthorized / Empty responses
-
-    for i in range(2, int(n**0.5) + 1):- Verify `.env` exists and `GROQ_API_KEY` is set
-
-        if n % i == 0:- Restart backend after changing `.env`
-
+```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
             return False
+    return True
+```
 
-    return True### Network Error
-
-```- Check your internet connection
-
-- Verify the API endpoint is correct
-
-### Example 2: Generate Java Code- Check browser console for detailed errors
+### Example 2: Generate Java Code
 
 **Prompt:** `write a fibonacci method in Java`
 
-## Project Structure
+**Click:** 💻 Code
 
-**Click:** </> Code```
+**Output:**
 
-SPM_VibeCoder/
-
-**Output:**├── backend/
-
-```java│   ├── __init__.py
-
-public class Fibonacci {│   ├── app.py         # FastAPI app
-
-    public static int fibonacci(int n) {│   ├── config.py      # Settings loader (.env)
-
-        if (n <= 1) return n;│   ├── models.py      # Pydantic models
-
-        return fibonacci(n - 1) + fibonacci(n - 2);│   └── llm_client.py  # Groq client (httpx)
-
-    }├── requirements.txt   # Python deps
-
-}├── .env.example       # Env template
-
-```├── start.sh           # Launch frontend+backend
-
-├── index.html         # Frontend UI
-
-### Example 3: Verify Code Correctness├── css/
-
-**Reference Code:**│   └── style.css
-
-```python└── js/
-
-def factorial(n):	└── main.js
-
-    return math.factorial(n)```
-
+```java
+public class Fibonacci {
+    public static int fibonacci(int n) {
+        if (n <= 1) return n;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+}
 ```
 
-## Security Note
+### Example 3: Verify Code Correctness
 
-**Generated Code:**⚠️ Never expose API keys in frontend. Keys are now stored in `.env` and used server-side only.
+**Reference Code:**
 
 ```python
+def factorial(n):
+    return math.factorial(n)
+```
 
-def factorial(n):## Credits
+**Generated Code:**
 
-    if n == 0:Reengineered by: Mahir, Rafid & Mehedi  
-
-        return 1Powered by: Groq LLM
-
+```python
+def factorial(n):
+    if n == 0:
+        return 1
     return n * factorial(n-1)
+```
 
-```## License
-
-Educational project for SPM course
-
-**Click:** Verify → **Result:** 73% (✅ EXCELLENT - High Correctness)
+**Click:** 📊 Verify → **Result:** 73% (✅ EXCELLENT - High Correctness)
 
 ---
 
@@ -368,6 +227,7 @@ PORT=8000
 ```
 
 ### Alternative Groq Models
+
 ```bash
 # Default (best for code)
 GROQ_MODEL=llama-3.3-70b-versatile
@@ -378,6 +238,7 @@ GROQ_MODEL=mixtral-8x7b-32768
 ```
 
 ### Custom Ports
+
 ```bash
 # Change backend port
 PORT=8001
@@ -391,6 +252,7 @@ FRONTEND_PORT=8080
 ## 🚨 Troubleshooting
 
 ### Problem: Port Already in Use
+
 ```bash
 # Solution 1: Use start.sh (handles this automatically)
 ./start.sh
@@ -401,6 +263,7 @@ lsof -ti:8000 | xargs kill -9
 ```
 
 ### Problem: API Key Not Working
+
 ```bash
 # Check .env file exists
 ls -la .env
@@ -413,6 +276,7 @@ GROQ_API_KEY=gsk_abc123...
 ```
 
 ### Problem: Backend Not Reachable
+
 ```bash
 # Check backend is running
 curl http://127.0.0.1:8000/api/health
@@ -426,6 +290,7 @@ ChatDebug.health()
 ```
 
 ### Problem: CodeBLEU Not Working
+
 ```bash
 # Reinstall CodeBLEU dependencies
 pip install --force-reinstall codebleu
@@ -435,6 +300,7 @@ pip install --force-reinstall codebleu
 ```
 
 ### Problem: "Network Error" in Browser
+
 - ✅ Check internet connection
 - ✅ Verify backend is running on port 8000
 - ✅ Check browser console (F12) for CORS errors
@@ -445,11 +311,13 @@ pip install --force-reinstall codebleu
 ## 🧪 Testing
 
 ### Test Backend Health
+
 ```bash
 curl http://127.0.0.1:8000/api/health
 ```
 
 ### Test Code Generation
+
 ```bash
 curl -X POST http://127.0.0.1:8000/api/generate_code \
   -H "Content-Type: application/json" \
@@ -461,6 +329,7 @@ curl -X POST http://127.0.0.1:8000/api/generate_code \
 ```
 
 ### Test Code Verification
+
 ```bash
 curl -X POST http://127.0.0.1:8000/api/verify_code \
   -H "Content-Type: application/json" \
@@ -473,6 +342,7 @@ curl -X POST http://127.0.0.1:8000/api/verify_code \
 ```
 
 ### Browser Console Testing
+
 ```javascript
 // Open browser console (F12) and try:
 ChatDebug.health()        // Check backend
@@ -494,7 +364,7 @@ ChatDebug.code()          // Get last generated code
 | `POST` | `/api/verify_code` | CodeBLEU verification |
 | `POST` | `/api/download_code` | Download code as file |
 
-**Full API Documentation:** http://127.0.0.1:8000/docs
+**Full API Documentation:** <http://127.0.0.1:8000/docs>
 
 ---
 
@@ -533,6 +403,7 @@ ChatDebug.code()          // Get last generated code
 This is an educational project for SPM course. Contributions and suggestions are welcome!
 
 **Team Members:**
+
 - Mahir
 - Rafid
 - Mehedi
@@ -556,11 +427,13 @@ Educational project - SPM Course
 ## 📞 Support
 
 **For issues:**
+
 1. Check [Troubleshooting](#-troubleshooting) section
 2. View browser console (F12) for errors
 3. Check backend logs in terminal
 
 **Debug Commands:**
+
 ```javascript
 // In browser console (F12)
 ChatDebug.health()  // Check backend status
@@ -584,7 +457,7 @@ ChatDebug.state()   // View application state
 
 ---
 
-**Ready to generate production-quality code? Start the app and click </> Code!**
+**Ready to generate production-quality code? Start the app and click 💻 Code!**
 
 ```bash
 ./start.sh

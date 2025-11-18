@@ -15,7 +15,7 @@ class GroqClient:
     async def chat(self, messages: List[Message], temperature: float = 0.7, max_tokens: int = 1024) -> Dict[str, Any]:
         payload = {
             "model": self.model,
-            "messages": [m.dict() for m in messages],
+            "messages": [m.model_dump() for m in messages],
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
